@@ -34,6 +34,10 @@ def calculate_weeks_lived(birth_date):
 def calculate_total_weeks(life_expectancy):
     return life_expectancy * 52
 
+def draw_rounded_rect(draw, xy, radius, fill):
+    x1, y1, x2, y2 = xy
+    draw.rounded_rectangle([x1, y1, x2, y2], radius=radius, fill=fill)
+
 def generate_life_image(birth_date, life_expectancy, model='12'):
     device = IPHONE_MODELS.get(model, IPHONE_MODELS['12'])
     width = device['width']
@@ -47,10 +51,10 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     scale = height / 2532
     
-    # Сдвигаем сетку ниже часов, убираем место под статистику
-    top_margin = int(750 * scale)
-    bottom_margin = int(280 * scale)
-    side_margin = int(80 * scale)
+    # Отступы: сверху под часы, снизу под кнопки
+    top_margin = int(720 * scale)
+    bottom_margin = int(420 * scale)
+    side_margin = int(100 * scale)
     
     available_height = height - top_margin - bottom_margin
     available_width = width - (side_margin * 2)
@@ -58,21 +62,26 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     cols = 52
     rows = math.ceil(total_weeks / cols)
     
+    # Рассчитываем размер с большим промежутком между элементами
     dot_spacing_x = available_width / cols
     dot_spacing_y = available_height / rows
     
     spacing = min(dot_spacing_x, dot_spacing_y)
-    dot_radius = spacing * 0.42  # Крупнее точки
+    
+    # Размер квадратика (60% от шага, остальное — промежуток)
+    square_size = spacing * 0.6
+    corner_radius = square_size * 0.25  # Скругление углов
     
     grid_width = cols * spacing
     grid_height = rows * spacing
     
-    start_x = (width - grid_width) / 2 + spacing / 2
-    start_y = top_margin + (available_height - grid_height) / 2 + spacing / 2
+    start_x = (width - grid_width) / 2 + (spacing - square_size) / 2
+    start_y = top_margin + (available_height - grid_height) / 2 + (spacing - square_size) / 2
     
-    lived_color = '#FFFFFF'
-    unlived_color = '#1C1C1E'
-    current_week_color = '#007AFF'
+    # Цвета — более мягкие
+    lived_color = '#E5E5EA'  # Светло-серый вместо белого
+    unlived_color = '#1C1C1E'  # Тёмно-серый
+    current_week_color = '#0A84FF'  # Apple blue
     
     for week in range(total_weeks):
         row = week // cols
@@ -88,8 +97,10 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
         else:
             color = unlived_color
         
-        draw.ellipse(
-            [x - dot_radius, y - dot_radius, x + dot_radius, y + dot_radius],
+        draw_rounded_rect(
+            draw,
+            [x, y, x + square_size, y + square_size],
+            radius=corner_radius,
             fill=color
         )
     
