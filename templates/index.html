@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Жизнь в неделях</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,44 +14,47 @@
             --text-secondary: #8E8E93;
             --text-tertiary: #48484A;
             --accent: #007AFF;
-            --accent-hover: #0A84FF;
         }
         html {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
             background: var(--bg);
             color: var(--text-primary);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             -webkit-font-smoothing: antialiased;
         }
         body {
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            padding: 20px;
+            padding-bottom: 40px;
         }
         .container { width: 100%; max-width: 400px; }
-        .header { text-align: center; margin-bottom: 48px; }
+        .header { text-align: center; margin-bottom: 32px; }
         .logo {
-            width: 80px; height: 80px;
-            margin: 0 auto 24px;
+            width: 72px; height: 72px;
+            margin: 0 auto 20px;
             background: var(--surface);
-            border-radius: 20px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .logo svg { width: 48px; height: 48px; opacity: 0.9; }
-        h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px; }
-        .subtitle { color: var(--text-secondary); font-size: 17px; }
+        .logo svg { width: 40px; height: 40px; opacity: 0.9; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text-secondary); font-size: 16px; }
+        
         .form-card {
             background: var(--surface);
             border-radius: 16px;
-            padding: 24px;
+            padding: 20px;
             margin-bottom: 16px;
         }
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; }
         .form-group:last-of-type { margin-bottom: 0; }
         label {
             display: block;
@@ -81,7 +84,6 @@
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             opacity: 0.5;
-            cursor: pointer;
         }
         .select-wrapper { position: relative; }
         .select-wrapper::after {
@@ -110,25 +112,29 @@
             color: white;
             font-family: inherit;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
-        button:hover { background: var(--accent-hover); }
-        .footer {
+        button:active { opacity: 0.8; }
+        
+        .info {
+            margin-top: 24px;
             text-align: center;
-            margin-top: 32px;
+        }
+        .info-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .info-hint svg { width: 14px; height: 14px; opacity: 0.6; }
+        .footer {
             color: var(--text-tertiary);
             font-size: 13px;
             line-height: 1.6;
         }
-        .preview-hint {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 16px;
-            color: var(--text-tertiary);
-            font-size: 13px;
-        }
-        .preview-hint svg { width: 16px; height: 16px; opacity: 0.5; }
     </style>
 </head>
 <body>
@@ -147,22 +153,22 @@
         <form action="/generate" method="POST">
             <div class="form-card">
                 <div class="form-group">
-                    <label for="birth_date">Дата рождения</label>
-                    <input type="date" id="birth_date" name="birth_date" required>
+                    <label>Дата рождения</label>
+                    <input type="date" name="birth_date" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="life_expectancy">Ожидаемый возраст (лет)</label>
-                    <input type="number" id="life_expectancy" name="life_expectancy" placeholder="80" min="1" max="150" required>
+                    <label>Ожидаемый возраст</label>
+                    <input type="number" name="life_expectancy" placeholder="80" min="1" max="120" value="80" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="model">Модель iPhone</label>
+                    <label>Модель iPhone</label>
                     <div class="select-wrapper">
-                        <select id="model" name="model">
+                        <select name="model">
                             {% for key, device in models.items() %}
                             <option value="{{ key }}" {% if key == '17air' %}selected{% endif %}>
-                                {{ device.name }} ({{ device.width }}×{{ device.height }})
+                                {{ device.name }}
                             </option>
                             {% endfor %}
                         </select>
@@ -173,23 +179,23 @@
             <button type="submit">Создать обои</button>
         </form>
         
-        <div class="preview-hint">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            <span>Ваши данные не сохраняются</span>
+        <div class="info">
+            <div class="info-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Данные не сохраняются
+            </div>
+            <p class="footer">
+                Каждый квадрат — одна неделя жизни<br>
+                Чем светлее — тем ценнее время
+            </p>
         </div>
-        
-        <footer class="footer">
-            Каждая точка — одна неделя жизни.<br>
-            Белые — прожитые. Синяя — текущая.
-        </footer>
     </div>
     
     <script>
-        document.getElementById('life_expectancy').value = 80;
         const today = new Date().toISOString().split('T')[0];
-        document.getElementById('birth_date').setAttribute('max', today);
+        document.querySelector('input[type="date"]').setAttribute('max', today);
     </script>
 </body>
 </html>
