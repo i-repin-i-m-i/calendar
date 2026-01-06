@@ -8,7 +8,6 @@ import os
 
 app = Flask(__name__)
 
-# iPhone screen resolutions (width x height in pixels)
 IPHONE_MODELS = {
     'se': {'name': 'iPhone SE / 8 / 7 / 6s', 'width': 750, 'height': 1334},
     '8plus': {'name': 'iPhone 8 Plus / 7 Plus / 6s Plus', 'width': 1242, 'height': 2208},
@@ -48,9 +47,10 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     scale = height / 2532
     
-    top_margin = int(420 * scale)
-    bottom_margin = int(580 * scale)
-    side_margin = int(60 * scale)
+    # Сдвигаем сетку ниже часов, убираем место под статистику
+    top_margin = int(750 * scale)
+    bottom_margin = int(280 * scale)
+    side_margin = int(80 * scale)
     
     available_height = height - top_margin - bottom_margin
     available_width = width - (side_margin * 2)
@@ -62,7 +62,7 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     dot_spacing_y = available_height / rows
     
     spacing = min(dot_spacing_x, dot_spacing_y)
-    dot_radius = spacing * 0.35
+    dot_radius = spacing * 0.42  # Крупнее точки
     
     grid_width = cols * spacing
     grid_height = rows * spacing
@@ -92,37 +92,6 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
             [x - dot_radius, y - dot_radius, x + dot_radius, y + dot_radius],
             fill=color
         )
-    
-    font_size_large = int(32 * scale)
-    font_size_small = int(24 * scale)
-    
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size_large)
-        font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size_small)
-    except:
-        font = ImageFont.load_default()
-        font_small = font
-    
-    percent_lived = (weeks_lived / total_weeks) * 100
-    years_lived = weeks_lived / 52
-    years_remaining = (total_weeks - weeks_lived) / 52
-    
-    stats_y = height - bottom_margin + int(100 * scale)
-    
-    main_text = f"{percent_lived:.1f}%"
-    bbox = draw.textbbox((0, 0), main_text, font=font)
-    text_width = bbox[2] - bbox[0]
-    draw.text(((width - text_width) / 2, stats_y), main_text, fill='#FFFFFF', font=font)
-    
-    sub_text = f"{years_lived:.1f} лет прожито · {years_remaining:.1f} лет осталось"
-    bbox = draw.textbbox((0, 0), sub_text, font=font_small)
-    text_width = bbox[2] - bbox[0]
-    draw.text(((width - text_width) / 2, stats_y + int(50 * scale)), sub_text, fill='#8E8E93', font=font_small)
-    
-    week_text = f"Неделя {weeks_lived} из {total_weeks}"
-    bbox = draw.textbbox((0, 0), week_text, font=font_small)
-    text_width = bbox[2] - bbox[0]
-    draw.text(((width - text_width) / 2, stats_y + int(90 * scale)), week_text, fill='#48484A', font=font_small)
     
     return img
 
