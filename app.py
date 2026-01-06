@@ -26,10 +26,8 @@ IPHONE_MODELS = {
     '17promax': {'name': 'iPhone 17 Pro Max', 'width': 1320, 'height': 2868},
 }
 
-# Этапы жизни
-YOUNG_END = 35 * 52        # До 35 — молодость, максимум энергии
-PRIME_END = 65 * 52        # 35-65 — зрелость, активные годы
-                           # После 65 — поздние годы
+YOUNG_END = 35 * 52
+PRIME_END = 65 * 52
 
 def calculate_weeks_lived(birth_date):
     today = date.today()
@@ -54,10 +52,10 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     top_margin = int(720 * scale)
     bottom_margin = int(420 * scale)
-    side_margin = int(100 * scale)
+    side_margin = int(140 * scale)  # Больше места слева для подписей
     
     available_height = height - top_margin - bottom_margin
-    available_width = width - (side_margin * 2)
+    available_width = width - side_margin - int(60 * scale)
     
     cols = 52
     rows = math.ceil(total_weeks / cols)
@@ -73,16 +71,60 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     grid_width = cols * spacing
     grid_height = rows * spacing
     
-    start_x = (width - grid_width) / 2 + gap / 2
+    start_x = side_margin + gap / 2
     start_y = top_margin + (available_height - grid_height) / 2 + gap / 2
+    
+    # Шрифт для подписей
+    font_size = int(20 * scale)
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
+    except:
+        font = ImageFont.load_default()
+    
+    label_color = '#3A3A3C'
+    
+    # Подписи лет слева (каждые 10 лет)
+    for year in range(0, life_expectancy + 1, 10):
+        if year == 0:
+            continue
+        row = year
+        y = start_y + (row - 0.5) * spacing + square_size / 2
+        
+        text = str(year)
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
+        draw.text(
+            (start_x - text_width - int(15 * scale), y - text_height / 2),
+            text,
+            fill=label_color,
+            font=font
+        )
+    
+    # Подписи недель сверху (каждые 13 недель = кварталы)
+    for week in [1, 13, 26, 39, 52]:
+        col = week - 1
+        x = start_x + col * spacing + square_size / 2
+        
+        text = str(week)
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        
+        draw.text(
+            (x - text_width / 2, start_y - int(30 * scale)),
+            text,
+            fill=label_color,
+            font=font
+        )
     
     # Цвета
     colors = {
-        'lived': '#FFFFFF',              # Прожитые — белый
-        'current': '#0A84FF',            # Текущая — синий
-        'future_young': '#48484A',       # До 35 — светло-серый (золотое время)
-        'future_prime': '#2C2C2E',       # 35-65 — средне-серый
-        'future_late': '#1C1C1E',        # После 65 — тёмный
+        'lived': '#FFFFFF',
+        'current': '#0A84FF',
+        'future_young': '#48484A',
+        'future_prime': '#2C2C2E',
+        'future_late': '#1C1C1E',
     }
     
     for week in range(total_weeks):
