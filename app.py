@@ -91,18 +91,17 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     label_color = '#48484A'
     
-    # Подписи лет слева
+   # Подписи лет справа (после заполнения строки)
     for year in range(10, life_expectancy + 1, 10):
         row = year - 1
-        cx, cy = get_cell_center(row, 0)
+        cx, cy = get_cell_center(row, cols - 1)  # Последний столбец
         
         text = str(year)
         bbox = draw.textbbox((0, 0), text, font=font)
-        text_w = bbox[2] - bbox[0]
         text_h = bbox[3] - bbox[1]
         
         draw.text(
-            (grid_start_x - text_w - int(8 * scale), cy - text_h / 2),
+            (grid_start_x + grid_width + int(8 * scale), cy - text_h / 2),
             text,
             fill=label_color,
             font=font
