@@ -26,6 +26,11 @@ IPHONE_MODELS = {
     '17promax': {'name': 'iPhone 17 Pro Max', 'width': 1320, 'height': 2868},
 }
 
+# Этапы жизни (в неделях)
+CHILDHOOD_END = 18 * 52      # До 18 лет — детство
+PRIME_END = 60 * 52          # 18-60 — активные годы
+RETIREMENT_START = 60 * 52   # После 60 — на пенсию скоро/уже
+
 def calculate_weeks_lived(birth_date):
     today = date.today()
     delta = today - birth_date
@@ -33,10 +38,6 @@ def calculate_weeks_lived(birth_date):
 
 def calculate_total_weeks(life_expectancy):
     return life_expectancy * 52
-
-def draw_rounded_rect(draw, xy, radius, fill):
-    x1, y1, x2, y2 = xy
-    draw.rounded_rectangle([x1, y1, x2, y2], radius=radius, fill=fill)
 
 def generate_life_image(birth_date, life_expectancy, model='12'):
     device = IPHONE_MODELS.get(model, IPHONE_MODELS['12'])
@@ -51,7 +52,6 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     scale = height / 2532
     
-    # Отступы: сверху под часы, снизу под кнопки
     top_margin = int(720 * scale)
     bottom_margin = int(420 * scale)
     side_margin = int(100 * scale)
@@ -62,45 +62,49 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     cols = 52
     rows = math.ceil(total_weeks / cols)
     
-    # Рассчитываем размер с большим промежутком между элементами
     dot_spacing_x = available_width / cols
     dot_spacing_y = available_height / rows
     
     spacing = min(dot_spacing_x, dot_spacing_y)
     
-    # Размер квадратика (60% от шага, остальное — промежуток)
-    square_size = spacing * 0.6
-    corner_radius = square_size * 0.25  # Скругление углов
+    # Размер квадратика и отступ
+    square_size = int(spacing * 0.55)
+    gap = spacing - square_size
     
     grid_width = cols * spacing
     grid_height = rows * spacing
     
-    start_x = (width - grid_width) / 2 + (spacing - square_size) / 2
-    start_y = top_margin + (available_height - grid_height) / 2 + (spacing - square_size) / 2
+    start_x = (width - grid_width) / 2 + gap / 2
+    start_y = top_margin + (available_height - grid_height) / 2 + gap / 2
     
-    # Цвета — более мягкие
-    lived_color = '#E5E5EA'  # Светло-серый вместо белого
-    unlived_color = '#1C1C1E'  # Тёмно-серый
-    current_week_color = '#0A84FF'  # Apple blue
+    # Цвета по этапам жизни
+    colors = {
+        'lived': '#FFFFFF',              # Прожитые — белый
+        'current': '#0A84FF',            # Текущая неделя — синий
+        'future_prime': '#3A3A3C',       # Будущие активные — тёмно-серый
+        'future_retirement': '#1C1C1E',  # Пенсия — почти чёрный (менее ценные)
+    }
     
     for week in range(total_weeks):
         row = week // cols
         col = week % cols
         
-        x = start_x + col * spacing
-        y = start_y + row * spacing
+        x = int(start_x + col * spacing)
+        y = int(start_y + row * spacing)
         
+        # Определяем цвет по логике
         if week < weeks_lived:
-            color = lived_color
+            color = colors['lived']
         elif week == weeks_lived:
-            color = current_week_color
+            color = colors['current']
+        elif week >= RETIREMENT_START:
+            color = colors['future_retirement']
         else:
-            color = unlived_color
+            color = colors['future_prime']
         
-        draw_rounded_rect(
-            draw,
+        # Рисуем аккуратный квадрат (без скругления для чёткости)
+        draw.rectangle(
             [x, y, x + square_size, y + square_size],
-            radius=corner_radius,
             fill=color
         )
     
