@@ -26,10 +26,10 @@ IPHONE_MODELS = {
     '17promax': {'name': 'iPhone 17 Pro Max', 'width': 1320, 'height': 2868},
 }
 
-# Этапы жизни (в неделях)
-CHILDHOOD_END = 18 * 52      # До 18 лет — детство
-PRIME_END = 60 * 52          # 18-60 — активные годы
-RETIREMENT_START = 60 * 52   # После 60 — на пенсию скоро/уже
+# Этапы жизни
+YOUNG_END = 35 * 52        # До 35 — молодость, максимум энергии
+PRIME_END = 65 * 52        # 35-65 — зрелость, активные годы
+                           # После 65 — поздние годы
 
 def calculate_weeks_lived(birth_date):
     today = date.today()
@@ -67,7 +67,6 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     spacing = min(dot_spacing_x, dot_spacing_y)
     
-    # Размер квадратика и отступ
     square_size = int(spacing * 0.55)
     gap = spacing - square_size
     
@@ -77,12 +76,13 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     start_x = (width - grid_width) / 2 + gap / 2
     start_y = top_margin + (available_height - grid_height) / 2 + gap / 2
     
-    # Цвета по этапам жизни
+    # Цвета
     colors = {
         'lived': '#FFFFFF',              # Прожитые — белый
-        'current': '#0A84FF',            # Текущая неделя — синий
-        'future_prime': '#3A3A3C',       # Будущие активные — тёмно-серый
-        'future_retirement': '#1C1C1E',  # Пенсия — почти чёрный (менее ценные)
+        'current': '#0A84FF',            # Текущая — синий
+        'future_young': '#48484A',       # До 35 — светло-серый (золотое время)
+        'future_prime': '#2C2C2E',       # 35-65 — средне-серый
+        'future_late': '#1C1C1E',        # После 65 — тёмный
     }
     
     for week in range(total_weeks):
@@ -92,17 +92,17 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
         x = int(start_x + col * spacing)
         y = int(start_y + row * spacing)
         
-        # Определяем цвет по логике
         if week < weeks_lived:
             color = colors['lived']
         elif week == weeks_lived:
             color = colors['current']
-        elif week >= RETIREMENT_START:
-            color = colors['future_retirement']
-        else:
+        elif week < YOUNG_END:
+            color = colors['future_young']
+        elif week < PRIME_END:
             color = colors['future_prime']
+        else:
+            color = colors['future_late']
         
-        # Рисуем аккуратный квадрат (без скругления для чёткости)
         draw.rectangle(
             [x, y, x + square_size, y + square_size],
             fill=color
