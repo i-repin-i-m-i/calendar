@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ваши обои — Жизнь в неделях</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg: #000000;
+            --surface: #1C1C1E;
+            --surface-elevated: #2C2C2E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --text-tertiary: #48484A;
+            --accent: #007AFF;
+            --accent-hover: #0A84FF;
+            --green: #30D158;
+            --border: #38383A;
+        }
+        
+        html {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        body {
+            min-height: 100vh;
+            padding: 24px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 17px;
+            margin-bottom: 32px;
+        }
+        
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        h1 {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .meta {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 32px;
+        }
+        
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+        
+        .preview-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 16px;
+            position: sticky;
+            top: 24px;
+        }
+        
+        .phone-frame {
+            background: #000;
+            border-radius: 40px;
+            padding: 12px;
+            position: relative;
+            aspect-ratio: 9/19.5;
+            overflow: hidden;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 28px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 32px;
+        }
+        
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--surface-elevated);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-icon svg {
+            width: 22px;
+            height: 22px;
+            color: var(--accent);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .url-container {
+            background: var(--surface-elevated);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .url-text {
+            flex: 1;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--text-secondary);
+            word-break: break-all;
+            line-height: 1.5;
+        }
+        
+        .copy-btn {
+            flex-shrink: 0;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .copy-btn:hover {
+            background: var(--accent-hover);
+        }
+        
+        .copy-btn.copied {
+            background: var(--green);
+        }
+        
+        .copy-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .download-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--surface-elevated);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--accent);
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        
+        .download-btn:hover {
+            background: var(--border);
+        }
+        
+        .download-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .steps {
+            counter-reset: step;
+        }
+        
+        .step {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .step:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .step:first-child {
+            padding-top: 0;
+        }
+        
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            background: var(--surface-elevated);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .step-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .step-content p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .step-content code {
+            background: var(--surface-elevated);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--accent);
+        }
+        
+        .note {
+            background: rgba(0, 122, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .note svg {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            color: var(--accent);
+        }
+        
+        @media (max-width: 720px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .preview-card {
+                position: static;
+                max-width: 280px;
+                margin: 0 auto;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+        }
+        
+        @media (max-width: 440px) {
+            body {
+                padding: 16px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .url-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .copy-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Назад
+        </a>
+        
+        <h1>Обои готовы</h1>
+        <p class="meta">{{ birth_date.strftime('%d.%m.%Y') }} → {{ life_expectancy }} лет</p>
+        
+        <div class="layout">
+            <div class="preview-card">
+                <div class="phone-frame">
+                    <img src="/image/{{ encoded }}.png" alt="Preview">
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Ссылка на изображение</h3>
+                    </div>
+                    
+                    <div class="url-container">
+                        <span class="url-text" id="image-url"></span>
+                        <button class="copy-btn" onclick="copyUrl()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="copy-icon">
+                                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span id="copy-text">Скопировать</span>
+                        </button>
+                    </div>
+                    
+                    <a href="/image/{{ encoded }}.png" download="life-weeks.png" class="download-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Скачать изображение
+                    </a>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <path d="M9 9h6v6H9z"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Настройка автоматизации</h3>
+                    </div>
+                    
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Откройте приложение Команды</h4>
+                                <p>Перейдите на вкладку «Автоматизация»</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Создайте новую автоматизацию</h4>
+                                <p>Нажмите + → «Время суток» → выберите время (например, 6:00) → «Еженедельно» → понедельник</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Добавьте действие загрузки</h4>
+                                <p>Найдите «Получить содержимое URL» и вставьте скопированную ссылку</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Добавьте установку обоев</h4>
+                                <p>Найдите «Задать обои» → выберите «Экран блокировки» → в качестве источника укажите результат предыдущего действия</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h4>Сохраните и проверьте</h4>
+                                <p>Отключите «Спрашивать до запуска» для автоматической работы</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="note">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <div>
+                        Изображение генерируется динамически при каждом запросе. Синяя точка автоматически сдвигается каждую неделю — вам не нужно ничего обновлять вручную.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Set full URL
+        const fullUrl = window.location.origin + '/image/{{ encoded }}.png';
+        document.getElementById('image-url').textContent = fullUrl;
+        
+        function copyUrl() {
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const text = document.getElementById('copy-text');
+                const icon = document.getElementById('copy-icon');
+                
+                btn.classList.add('copied');
+                text.textContent = 'Скопировано';
+                icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+                
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    text.textContent = 'Скопировать';
+                    icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Жизнь в неделях</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg: #000000;
+            --surface: #1C1C1E;
+            --surface-elevated: #2C2C2E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --text-tertiary: #48484A;
+            --accent: #007AFF;
+            --accent-hover: #0A84FF;
+            --border: #38383A;
+        }
+        
+        html {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: var(--surface);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo svg {
+            width: 48px;
+            height: 48px;
+            opacity: 0.9;
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 17px;
+            line-height: 1.5;
+        }
+        
+        .form-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group:last-of-type {
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        input {
+            width: 100%;
+            background: var(--surface-elevated);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 17px;
+            color: var(--text-primary);
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        input:focus {
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+        }
+        
+        input::placeholder {
+            color: var(--text-tertiary);
+        }
+        
+        input[type="date"] {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.5;
+            cursor: pointer;
+        }
+        
+        button {
+            width: 100%;
+            background: var(--accent);
+            border: none;
+            border-radius: 14px;
+            padding: 18px;
+            font-size: 17px;
+            font-weight: 600;
+            color: white;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            background: var(--accent-hover);
+            transform: scale(1.01);
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        
+        .preview-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px;
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+        
+        .preview-hint svg {
+            width: 16px;
+            height: 16px;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 440px) {
+            body {
+                padding: 16px;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+            
+            .form-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+            </div>
+            <h1>Жизнь в неделях</h1>
+            <p class="subtitle">Визуализация времени для обоев iPhone</p>
+        </header>
+        
+        <form action="/generate" method="POST">
+            <div class="form-card">
+                <div class="form-group">
+                    <label for="birth_date">Дата рождения</label>
+                    <input 
+                        type="date" 
+                        id="birth_date" 
+                        name="birth_date" 
+                        required
+                        max="{{ today }}"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="life_expectancy">Ожидаемый возраст (лет)</label>
+                    <input 
+                        type="number" 
+                        id="life_expectancy" 
+                        name="life_expectancy" 
+                        placeholder="80"
+                        min="1"
+                        max="150"
+                        required
+                    >
+                </div>
+            </div>
+            
+            <button type="submit">Создать обои</button>
+        </form>
+        
+        <div class="preview-hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Ваши данные не сохраняются</span>
+        </div>
+        
+        <footer class="footer">
+            Каждая точка — одна неделя жизни.<br>
+            Белые — прожитые. Синяя — текущая.
+        </footer>
+    </div>
+    
+    <script>
+        // Set default life expectancy
+        document.getElementById('life_expectancy').value = 80;
+        
+        // Set max date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('birth_date').setAttribute('max', today);
+    </script>
+</body>
+</html>
