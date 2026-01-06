@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for
 from PIL import Image, ImageDraw, ImageFont
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from io import BytesIO
 import base64
 import math
@@ -26,24 +26,50 @@ IPHONE_MODELS = {
     '17promax': {'name': 'iPhone 17 Pro Max', 'width': 1320, 'height': 2868},
 }
 
-YOUNG_END = 35 * 52
-PRIME_END = 65 * 52
+def get_age_birthday(birth_date, years):
+    """Получить дату дня рождения в указанном возрасте"""
+    try:
+        return date(birth_date.year + years, birth_date.month, birth_date.day)
+    except ValueError:
+        # 29 февраля в невисокосный год -> 28 февраля
+        return date(birth_date.year + years, birth_date.month, 28)
 
-def calculate_weeks_lived(birth_date):
-    today = date.today()
-    delta = today - birth_date
-    return delta.days // 7
+def get_week_status(birth_date, row, col, today):
+    """
+    Определяет статус недели на сетке.
+    row = год жизни (0 = первый год)
+    col = неделя в году (0-51)
+    Возвращает: 'lived', 'current', 'future'
+    """
+    # Дата начала этого года жизни (день рождения)
+    year_start = get_age_birthday(birth_date, row)
+    
+    # Дата начала этой недели
+    week_start = year_start + timedelta(days=col * 7)
+    week_end = week_start + timedelta(days=7)
+    
+    if today >= week_end:
+        return 'lived'
+    elif today >= week_start:
+        return 'current'
+    else:
+        return 'future'
 
-def calculate_total_weeks(life_expectancy):
-    return life_expectancy * 52
+def get_life_stage(row):
+    """Определяет этап жизни по году"""
+    if row < 35:
+        return 'young'      # До 35
+    elif row < 65:
+        return 'prime'      # 35-65
+    else:
+        return 'late'       # После 65
 
 def generate_life_image(birth_date, life_expectancy, model='12'):
     device = IPHONE_MODELS.get(model, IPHONE_MODELS['12'])
     width = device['width']
     height = device['height']
     
-    weeks_lived = calculate_weeks_lived(birth_date)
-    total_weeks = calculate_total_weeks(life_expectancy)
+    today = date.today()
     
     img = Image.new('RGB', (width, height), color='#000000')
     draw = ImageDraw.Draw(img)
@@ -58,9 +84,7 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     cols = 52
     rows = life_expectancy
     
-    # Сначала вычисляем размер сетки исходя из доступного пространства
-    # Оставляем место для подписей слева (50px) но центрируем саму сетку по экрану
-    max_grid_width = width - int(120 * scale)  # Отступы по бокам
+    max_grid_width = width - int(120 * scale)
     max_grid_height = available_height
     
     cell_width = max_grid_width / cols
@@ -69,11 +93,9 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     square_size = int(cell_size * 0.6)
     
-    # Размер итоговой сетки
     grid_width = cols * cell_size
     grid_height = rows * cell_size
     
-    # Центрируем сетку по горизонтали относительно ВСЕГО экрана
     grid_start_x = (width - grid_width) / 2
     grid_start_y = top_margin + (available_height - grid_height) / 2
     
@@ -91,10 +113,10 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     label_color = '#48484A'
     
-   # Подписи лет справа (после заполнения строки)
+    # Подписи лет справа
     for year in range(10, life_expectancy + 1, 10):
         row = year - 1
-        cx, cy = get_cell_center(row, cols - 1)  # Последний столбец
+        cx, cy = get_cell_center(row, cols - 1)
         
         text = str(year)
         bbox = draw.textbbox((0, 0), text, font=font)
@@ -125,6 +147,7 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
             font=font
         )
     
+    # Цвета
     colors = {
         'lived': '#FFFFFF',
         'current': '#0A84FF',
@@ -133,29 +156,34 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
         'future_late': '#1C1C1E',
     }
     
-    for week in range(total_weeks):
-        row = week // cols
-        col = week % cols
-        
-        cx, cy = get_cell_center(row, col)
-        
-        x1 = cx - square_size / 2
-        y1 = cy - square_size / 2
-        x2 = cx + square_size / 2
-        y2 = cy + square_size / 2
-        
-        if week < weeks_lived:
-            color = colors['lived']
-        elif week == weeks_lived:
-            color = colors['current']
-        elif week < YOUNG_END:
-            color = colors['future_young']
-        elif week < PRIME_END:
-            color = colors['future_prime']
-        else:
-            color = colors['future_late']
-        
-        draw.rectangle([x1, y1, x2, y2], fill=color)
+    # Рисуем квадратики
+    for row in range(rows):
+        for col in range(cols):
+            cx, cy = get_cell_center(row, col)
+            
+            x1 = cx - square_size / 2
+            y1 = cy - square_size / 2
+            x2 = cx + square_size / 2
+            y2 = cy + square_size / 2
+            
+            # Определяем статус недели (точный расчёт по датам)
+            status = get_week_status(birth_date, row, col, today)
+            stage = get_life_stage(row)
+            
+            if status == 'lived':
+                color = colors['lived']
+            elif status == 'current':
+                color = colors['current']
+            else:
+                # Будущее — цвет зависит от этапа жизни
+                if stage == 'young':
+                    color = colors['future_young']
+                elif stage == 'prime':
+                    color = colors['future_prime']
+                else:
+                    color = colors['future_late']
+            
+            draw.rectangle([x1, y1, x2, y2], fill=color)
     
     return img
 
