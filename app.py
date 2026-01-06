@@ -50,31 +50,40 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     scale = height / 2532
     
-    top_margin = int(720 * scale)
-    bottom_margin = int(420 * scale)
-    side_margin = int(140 * scale)
+    top_margin = int(750 * scale)
+    bottom_margin = int(400 * scale)
     
     available_height = height - top_margin - bottom_margin
-    available_width = width - side_margin - int(60 * scale)
     
     cols = 52
-    rows = math.ceil(total_weeks / cols)
+    rows = life_expectancy
     
-    dot_spacing_x = available_width / cols
-    dot_spacing_y = available_height / rows
+    # Сначала вычисляем размер сетки исходя из доступного пространства
+    # Оставляем место для подписей слева (50px) но центрируем саму сетку по экрану
+    max_grid_width = width - int(120 * scale)  # Отступы по бокам
+    max_grid_height = available_height
     
-    spacing = min(dot_spacing_x, dot_spacing_y)
+    cell_width = max_grid_width / cols
+    cell_height = max_grid_height / rows
+    cell_size = min(cell_width, cell_height)
     
-    square_size = int(spacing * 0.55)
-    gap = spacing - square_size
+    square_size = int(cell_size * 0.6)
     
-    grid_width = cols * spacing
-    grid_height = rows * spacing
+    # Размер итоговой сетки
+    grid_width = cols * cell_size
+    grid_height = rows * cell_size
     
-    start_x = side_margin + gap / 2
-    start_y = top_margin + (available_height - grid_height) / 2 + gap / 2
+    # Центрируем сетку по горизонтали относительно ВСЕГО экрана
+    grid_start_x = (width - grid_width) / 2
+    grid_start_y = top_margin + (available_height - grid_height) / 2
     
-    font_size = int(18 * scale)
+    def get_cell_center(row, col):
+        x = grid_start_x + col * cell_size + cell_size / 2
+        y = grid_start_y + row * cell_size + cell_size / 2
+        return x, y
+    
+    # Шрифт
+    font_size = max(int(16 * scale), 10)
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
     except:
@@ -82,34 +91,36 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     label_color = '#48484A'
     
-    # Подписи лет слева (каждые 10 лет) — центрируем по строке
+    # Подписи лет слева
     for year in range(10, life_expectancy + 1, 10):
-        row = year - 1  # Строка соответствующая этому году (0-indexed)
-        y = start_y + row * spacing + square_size / 2
+        row = year - 1
+        cx, cy = get_cell_center(row, 0)
         
         text = str(year)
         bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
+        text_w = bbox[2] - bbox[0]
+        text_h = bbox[3] - bbox[1]
         
         draw.text(
-            (start_x - text_width - int(12 * scale), y - text_height / 2),
+            (grid_start_x - text_w - int(8 * scale), cy - text_h / 2),
             text,
             fill=label_color,
             font=font
         )
     
-    # Подписи недель сверху — центрируем по столбцу
-    for week in [1, 13, 26, 39, 52]:
+    # Подписи недель сверху
+    week_labels = [1, 13, 26, 39, 52]
+    for week in week_labels:
         col = week - 1
-        x = start_x + col * spacing + square_size / 2
+        cx, cy = get_cell_center(0, col)
         
         text = str(week)
         bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
+        text_w = bbox[2] - bbox[0]
+        text_h = bbox[3] - bbox[1]
         
         draw.text(
-            (x - text_width / 2, start_y - int(25 * scale)),
+            (cx - text_w / 2, grid_start_y - text_h - int(6 * scale)),
             text,
             fill=label_color,
             font=font
@@ -127,8 +138,12 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
         row = week // cols
         col = week % cols
         
-        x = int(start_x + col * spacing)
-        y = int(start_y + row * spacing)
+        cx, cy = get_cell_center(row, col)
+        
+        x1 = cx - square_size / 2
+        y1 = cy - square_size / 2
+        x2 = cx + square_size / 2
+        y2 = cy + square_size / 2
         
         if week < weeks_lived:
             color = colors['lived']
@@ -141,10 +156,7 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
         else:
             color = colors['future_late']
         
-        draw.rectangle(
-            [x, y, x + square_size, y + square_size],
-            fill=color
-        )
+        draw.rectangle([x1, y1, x2, y2], fill=color)
     
     return img
 
