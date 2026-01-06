@@ -52,7 +52,7 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     
     top_margin = int(720 * scale)
     bottom_margin = int(420 * scale)
-    side_margin = int(140 * scale)  # Больше места слева для подписей
+    side_margin = int(140 * scale)
     
     available_height = height - top_margin - bottom_margin
     available_width = width - side_margin - int(60 * scale)
@@ -74,21 +74,18 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
     start_x = side_margin + gap / 2
     start_y = top_margin + (available_height - grid_height) / 2 + gap / 2
     
-    # Шрифт для подписей
-    font_size = int(20 * scale)
+    font_size = int(18 * scale)
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
     except:
         font = ImageFont.load_default()
     
-    label_color = '#3A3A3C'
+    label_color = '#48484A'
     
-    # Подписи лет слева (каждые 10 лет)
-    for year in range(0, life_expectancy + 1, 10):
-        if year == 0:
-            continue
-        row = year
-        y = start_y + (row - 0.5) * spacing + square_size / 2
+    # Подписи лет слева (каждые 10 лет) — центрируем по строке
+    for year in range(10, life_expectancy + 1, 10):
+        row = year - 1  # Строка соответствующая этому году (0-indexed)
+        y = start_y + row * spacing + square_size / 2
         
         text = str(year)
         bbox = draw.textbbox((0, 0), text, font=font)
@@ -96,13 +93,13 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
         text_height = bbox[3] - bbox[1]
         
         draw.text(
-            (start_x - text_width - int(15 * scale), y - text_height / 2),
+            (start_x - text_width - int(12 * scale), y - text_height / 2),
             text,
             fill=label_color,
             font=font
         )
     
-    # Подписи недель сверху (каждые 13 недель = кварталы)
+    # Подписи недель сверху — центрируем по столбцу
     for week in [1, 13, 26, 39, 52]:
         col = week - 1
         x = start_x + col * spacing + square_size / 2
@@ -112,13 +109,12 @@ def generate_life_image(birth_date, life_expectancy, model='12'):
         text_width = bbox[2] - bbox[0]
         
         draw.text(
-            (x - text_width / 2, start_y - int(30 * scale)),
+            (x - text_width / 2, start_y - int(25 * scale)),
             text,
             fill=label_color,
             font=font
         )
     
-    # Цвета
     colors = {
         'lived': '#FFFFFF',
         'current': '#0A84FF',
